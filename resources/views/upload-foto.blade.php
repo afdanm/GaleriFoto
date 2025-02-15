@@ -41,6 +41,8 @@
             font-size: 28px;
             margin-bottom: 20px;
             color: #fff;
+            z-index: 2;
+            position: relative;
         }
 
         .upload-form {
@@ -55,6 +57,8 @@
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.18);
             max-width: 400px;
+            z-index: 2;
+            position: relative;
         }
 
         .upload-form label {
@@ -117,6 +121,8 @@
             color: #4caf50;
             font-size: 16px;
             margin-bottom: 20px;
+            z-index: 2;
+            position: relative;
         }
 
         .home-link {
@@ -128,15 +134,28 @@
             padding: 10px 20px;
             border-radius: 10px;
             transition: 0.3s;
+            z-index: 2;
+            position: relative;
         }
 
         .home-link:hover {
             background: rgba(255, 255, 255, 0.3);
             transform: translateY(-3px);
         }
+
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
     </style>
 </head>
 <body>
+    <canvas id="backgroundCanvas"></canvas>
+
     <h2>Upload Foto Baru</h2>
 
     @if (session('success'))
@@ -155,5 +174,81 @@
     </form>
 
     <a href="/" class="home-link">Kembali ke Home</a>
+
+    <script>
+        const canvas = document.getElementById('backgroundCanvas');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const colors = ['#ee7752', '#e73c7e', '#23a6d5', '#23d5ab'];
+        const particles = [];
+
+        class Particle {
+            constructor(x, y, radius, color, velocity) {
+                this.x = x;
+                this.y = y;
+                this.radius = radius;
+                this.color = color;
+                this.velocity = velocity;
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+                ctx.closePath();
+            }
+
+            update() {
+                this.draw();
+                this.x += this.velocity.x;
+                this.y += this.velocity.y;
+
+                if (this.x + this.radius > canvas.width || this.x - this.radius < 0) {
+                    this.velocity.x = -this.velocity.x;
+                }
+
+                if (this.y + this.radius > canvas.height || this.y - this.radius < 0) {
+                    this.velocity.y = -this.velocity.y;
+                }
+            }
+        }
+
+        function init() {
+            particles.length = 0;
+            for (let i = 0; i < 100; i++) {
+                const radius = Math.random() * 3 + 1;
+                const x = Math.random() * (canvas.width - radius * 2) + radius;
+                const y = Math.random() * (canvas.height - radius * 2) + radius;
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                const velocity = {
+                    x: (Math.random() - 0.5) * 2,
+                    y: (Math.random() - 0.5) * 2
+                };
+                particles.push(new Particle(x, y, radius, color, velocity));
+            }
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            particles.forEach(particle => {
+                particle.update();
+            });
+        }
+
+        init();
+        animate();
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            init();
+        });
+    </script>
 </body>
 </html>

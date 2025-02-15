@@ -42,6 +42,8 @@
             backdrop-filter: blur(10px);
             box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
             border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+            z-index: 2;
+            position: relative;
         }
 
         header h1 {
@@ -76,6 +78,8 @@
             font-size: 28px;
             margin-top: 20px;
             color: #fff;
+            z-index: 2;
+            position: relative;
         }
 
         .upload-button {
@@ -92,6 +96,8 @@
             backdrop-filter: blur(5px);
             border: 1px solid rgba(255, 255, 255, 0.18);
             transition: 0.3s;
+            z-index: 2;
+            position: relative;
         }
 
         .upload-button:hover {
@@ -107,6 +113,8 @@
             padding: 20px;
             max-width: 1200px;
             margin: auto;
+            z-index: 2;
+            position: relative;
         }
 
         .gallery-item {
@@ -118,6 +126,7 @@
             backdrop-filter: blur(5px);
             border: 1px solid rgba(255, 255, 255, 0.18);
             position: relative;
+            z-index: 2;
         }
 
         .gallery-item:hover {
@@ -173,6 +182,8 @@
             max-width: 400px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
             animation: fadeIn 0.5s ease-in-out;
+            z-index: 2;
+            position: relative;
         }
 
         @keyframes fadeIn {
@@ -276,9 +287,21 @@
             transform: translateY(-3px);
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
         }
+
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
     </style>
 </head>
 <body>
+
     <header>
         <h1>Galeri Foto Saya</h1>
         <nav>
@@ -311,11 +334,10 @@
     @endif
 
     <!-- Modal for Image Zoom -->
-    <div id="myModal" class="modal">
+    <div id="myModal" class="modal" onclick="closeModal(event)">
         <span class="close" onclick="closeModal()">&times;</span>
         <img class="modal-content" id="img01">
     </div>
-
     <!-- Confirmation Modal -->
     <div id="confirmationModal" class="confirmation-modal">
         <div class="confirmation-modal-content">
@@ -324,8 +346,87 @@
             <button class="cancel" onclick="closeConfirmationModal()">Batal</button>
         </div>
     </div>
+    
+    <canvas id="backgroundCanvas"></canvas>
 
     <script>
+        // Animasi Partikel
+        const canvas = document.getElementById('backgroundCanvas');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const colors = ['#ee7752', '#e73c7e', '#23a6d5', '#23d5ab'];
+        const particles = [];
+
+        class Particle {
+            constructor(x, y, radius, color, velocity) {
+                this.x = x;
+                this.y = y;
+                this.radius = radius;
+                this.color = color;
+                this.velocity = velocity;
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+                ctx.closePath();
+            }
+
+            update() {
+                this.draw();
+                this.x += this.velocity.x;
+                this.y += this.velocity.y;
+
+                if (this.x + this.radius > canvas.width || this.x - this.radius < 0) {
+                    this.velocity.x = -this.velocity.x;
+                }
+
+                if (this.y + this.radius > canvas.height || this.y - this.radius < 0) {
+                    this.velocity.y = -this.velocity.y;
+                }
+            }
+        }
+
+        function init() {
+            particles.length = 0;
+            for (let i = 0; i < 100; i++) {
+                const radius = Math.random() * 3 + 1;
+                const x = Math.random() * (canvas.width - radius * 2) + radius;
+                const y = Math.random() * (canvas.height - radius * 2) + radius;
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                const velocity = {
+                    x: (Math.random() - 0.5) * 2,
+                    y: (Math.random() - 0.5) * 2
+                };
+                particles.push(new Particle(x, y, radius, color, velocity));
+            }
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            particles.forEach(particle => {
+                particle.update();
+            });
+        }
+
+        init();
+        animate();
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            init();
+        });
+
+        // Fungsi lainnya yang sudah ada sebelumnya
+
         // Function to open image modal
         function openModal(src) {
             document.getElementById('myModal').style.display = "block";
@@ -333,8 +434,10 @@
         }
 
         // Function to close image modal
-        function closeModal() {
-            document.getElementById('myModal').style.display = "none";
+        function closeModal(event) {
+            if (event.target === document.getElementById('myModal') || event.target.className === 'close') {
+                document.getElementById('myModal').style.display = "none";
+            }
         }
 
         // Function to open confirmation modal
@@ -352,10 +455,10 @@
 
         // Function to delete photo
         function deletePhoto() {
-    if (photoIdToDelete) {
-        window.location.href = `/photos/destroy/${photoIdToDelete}`;
-    }
-}
+            if (photoIdToDelete) {
+                window.location.href = `/photos/destroy/${photoIdToDelete}`;
+            }
+        }
 
         // Auto-hide success alert after 2 seconds
         const successAlert = document.getElementById('success-alert');

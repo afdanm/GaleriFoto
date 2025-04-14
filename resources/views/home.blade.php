@@ -135,9 +135,9 @@
     <canvas id="backgroundCanvas"></canvas>
 
     <div class="container">
-        <h1>Welcome to My Photo Gallery</h1>
-        <h2>Explore My Collection</h2>
-        <p>Choose a category below to explore my works.</p>
+        <h1>Selamat Datang di Halaman Saya</h1>
+        <h2>Explosari Koleksi Saya</h2>
+        <p>Pilih Kategori Koleksi Saya.</p>
 
         <div class="menu">
             <a href="/galeri-saya">📸 Galeri Foto</a>

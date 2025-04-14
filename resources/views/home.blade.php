@@ -136,9 +136,8 @@
 
     <div class="container">
         <h1>Selamat Datang di Halaman Saya</h1>
-        <h2>Explosari Koleksi Saya</h2>
-        <p>Pilih Kategori Koleksi Saya.</p>
-
+        <h2>Explorasi Koleksi Saya</h2>
+        
         <div class="menu">
             <a href="/galeri-saya">📸 Galeri Foto</a>
             <a href="/seni-saya">🎨 Seni Saya</a>
